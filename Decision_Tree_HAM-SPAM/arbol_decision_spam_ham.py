@@ -476,6 +476,68 @@ def run_cv_comparison_experiment(X_full, y_full, n_splits=5):
     except Exception as e:
       raise Exception(f" Error running CV comparison experiment: {e}")
 
+def plot_split_variation_results(results_df, feature_group_name):
+    """
+      Display the results of the split sensitivity analysis.
+
+      Create a boxplot comparing the distribution of the F1-Score for each
+      percentage split tested.
+
+      Args:
+          results_df (pd.DataFrame): DataFrame with the results of the experiment.
+          feature_group_name (str): Name of the feature group for the title.
+    """
+    plt.figure(figsize=(12, 7))
+    sns.boxplot(data=results_df, x='test_size_percent', y='f1_score', hue='test_size_percent', palette='viridis', legend=False)
+
+    plt.title(f'Distribution of F1-Score vs. Test Percentage\n(Feature Group: {feature_group_name})', fontsize=16)
+    plt.xlabel('Percentage of Data for Testing (%)', fontsize=12)
+    plt.ylabel('F1-Score', fontsize=12)
+    plt.grid(True, linestyle='--', alpha=0.6)
+    plt.show()
+
+def analyze_variation_split(X, y,
+                            split_percentages=[0.15, 0.20, 0.25, 0.30, 0.35],
+                            runs_per_split=50):
+  """
+    Orchestrate the experiment to analyze the model's sensitivity to split size.
+
+    Args:
+        X (pd.DataFrame): The complete set of features.
+        y (pd.Series): The complete target vector.
+        split_percentages (list): A list of percentages for the test set size.
+        runs_per_split (int): The number of random runs for each percentage.
+  """
+  try:
+    features_groups = get_feature_groups()
+    for feature_group in features_groups.keys():
+      print("STARTING ADDITIONAL ANALYSIS: SENSITIVITY TO SPLIT SIZE")
+      print(f"   - Features group: '{feature_group}'")
+      print(f"   - Percentage executions: {runs_per_split}")
+      X_group = select_features(X, feature_group)
+      all_results = []
+      for test_size in split_percentages:
+        print(f"\n--- Using Test Size: {test_size*100:.0f}% ---")
+        for i in range(runs_per_split):
+          metrics, model, cm, feature_names = run_experiment_iteration(
+            X_group, y, test_size, None)
+          result_row = {'group': feature_group, 'run': i + 1, 'seed': None,
+                        'test_size_percent': int(test_size * 100)}
+          result_row.update(metrics)
+          all_results.append(result_row)
+
+          if (i + 1) % 25 == 0:
+            print(f" Completed run {i+1}/{runs_per_split}... (F1-Score: {metrics['f1_score']:.4f})")
+
+      results_ds = pd.DataFrame(all_results)
+      summary = results_ds.groupby('test_size_percent')['f1_score'].agg(['mean', 'std', 'min', 'max']).round(4)
+      print("\n\nSummary Results by Division Percentage:")
+      print(summary.sort_values('mean', ascending=False))
+      plot_split_variation_results(results_ds, feature_group)
+
+  except Exception as e:
+    raise Exception(f"Error analyzing variation in split: {e}")
+
 """###**Procedimiento**
 
 1. Lectura y preprocesamiento de datos.
@@ -538,6 +600,10 @@ def main():
             # --- Cross-Validation Results ---
             print(" ===\nCROSS-VALIDATION RESULTS (STABILITY TEST)\n ===")
             print(cv_results.sort_values('f1_mean', ascending=False))
+
+            print("\n\n")
+            print(" ===\n Variation split analysis\n ===")
+            analyze_variation_split(X, y, split_percentages=[0.15, 0.20, 0.25, 0.30, 0.35], runs_per_split=25)
 
           except Exception as e:
             raise Exception(f"Error analyzing results: {e}")
