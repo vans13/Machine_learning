@@ -31,8 +31,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import random
+import graphviz
 from sklearn.model_selection import train_test_split, StratifiedKFold, cross_val_score
-from sklearn.tree import DecisionTreeClassifier, plot_tree
+from sklearn.tree import DecisionTreeClassifier, export_graphviz
 from sklearn.metrics import (accuracy_score, f1_score, precision_score, recall_score,
                              confusion_matrix, classification_report, roc_auc_score)
 from sklearn.preprocessing import StandardScaler
@@ -62,7 +63,7 @@ def load_preprocess_data(path: str):
     if 'dominio_remitente' in ds.columns and 'dominio_respuesta' in ds.columns:
       ds['dominio_coincide'] = (ds['dominio_remitente'] == ds['dominio_respuesta']).astype(int)
       ds = ds.drop(columns=['dominio_remitente', 'dominio_respuesta'])
-      print("✓ Feature 'dominio_coincide' created and original columns deleted")
+      print("Feature 'dominio_coincide' created and original columns deleted")
 
     if 'clase' not in ds.columns:
       raise ValueError("The target column 'clase' is missing in the dataset")
@@ -123,7 +124,7 @@ Aquí se eliminan o toman las features necesarias según la petición del main.
 
 def select_features(X: pd.DataFrame, group_name: str):
   """
-  Selects columns from a DataFrame based on a predefined feature group.
+  Selects columns from a Dataset based on a predefined feature group.
   - args:
       X (pd.DataFrame): The input DataFrame with all features.
       group_name (str): The name of the feature group to select.
@@ -155,8 +156,7 @@ Debido a que ambos tienen resultados similares, diferenciados por puntos decimal
 
 def run_normalization_test(X_train, y_train, X_test, y_test):
   """
-  Demonstrate the effect (or lack thereof) of feature scaling on a Decision Tree's
-  performance.
+  Demonstrate the effect of feature scaling on a Decision Tree's performance.
   - args:
       X_train, y_train, X_test, y_test: The data splits.
   - returns:
@@ -196,11 +196,7 @@ Cada uno de los grupos se compara según los 4 scores más usados (accuracy, F1,
 
 def plot_metric_distributions(results_ds: pd.DataFrame):
   """
-  Creates a 2x2 grid of boxplots to compare the distribution of performance
-  metrics (F1-Score and Accuracy) across the different feature groups.
-  - args:
-      results_ds (pd.DataFrame): DataFrame containing the results of all experiments.
-  - returns: None
+  Creates a 2x2 grid of boxplots to compare the distribution of performance-
   """
   try:
     fig, axes = plt.subplots(2, 2, figsize=(16, 12))
@@ -243,7 +239,7 @@ def plot_metric_distributions(results_ds: pd.DataFrame):
 
 """###**Evolución de resultados según el entrenamiento**
 
-Aquí se muestra una gráfica de todos los grupos de features y su resultado de precisión a lo largo de lso diferentes entrenamientos a los que se sometieron.
+Aquí se muestra una gráfica de todos los grupos de features y su resultado de precisión a lo largo de los diferentes entrenamientos a los que se sometieron.
 """
 
 def plot_metric_progression(results_ds: pd.DataFrame):
@@ -260,6 +256,16 @@ def plot_metric_progression(results_ds: pd.DataFrame):
     plt.title('F1-Score Progression Across Training Runs', fontsize=16)
     plt.xlabel('Training Run Number (Per Group)', fontsize=12)
     plt.ylabel('F1-Score', fontsize=12)
+    plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+    plt.legend(title='Feature Group')
+    plt.show()
+    print("\n")
+
+    plt.figure(figsize=(15, 7))
+    sns.lineplot(data=results_ds, x='run', y='accuracy', hue='group', alpha=0.8, palette='husl')
+    plt.title('Accuracy Progression Across Training Runs', fontsize=16)
+    plt.xlabel('Training Run Number (Per Group)', fontsize=12)
+    plt.ylabel('Accuracy Score', fontsize=12)
     plt.grid(True, which='both', linestyle='--', linewidth=0.5)
     plt.legend(title='Feature Group')
     plt.show()
@@ -297,12 +303,10 @@ def plot_confusion_matrix_heatmap(cm, title):
 
 """###**Mostrar Árbol de decisión**
 
-Aquí se presenta el árbol de decisión creado por cada uno de los grupos de features. Debido a su gran tamaño, pues no se limitó, se limita a solo 5 niveles.
-
-Si se desea ver la totalidad del arbol, se elimina esta restricción, pero pierde la capacidad de comprensión del árbol.
+Aquí se presenta el árbol de decisión creado por cada uno de los grupos de features. Para lograr ver la totalidad del arbol, se usó la librería graphviz y se guardan como un archivo png para poder acercarlo y entender las decisiones que tomó el modelo.
 """
 
-def plot_decision_tree_structure(model, feature_names, class_names=['HAM', 'SPAM']):
+def plot_decision_tree_structure(model, feature_names, class_names=['HAM', 'SPAM'], group_name='default'):
     """
     Visualizes the structure of a trained Decision Tree.
     - args:
@@ -312,20 +316,68 @@ def plot_decision_tree_structure(model, feature_names, class_names=['HAM', 'SPAM
     - returns: None
     """
     try:
-      plt.figure(figsize=(25, 15))
-      plot_tree(model,
-                feature_names=feature_names,
-                class_names=class_names,
-                filled=True,
-                rounded=True,
-                max_depth=5,
-                fontsize=10,
-                label='all')
-      plt.title('Decision Tree Structure (Top 5 Levels)', fontsize=20)
-      plt.show()
+      file_name = f"decision_tree_{group_name}"
+      dot_data = export_graphviz(model, out_file=None,
+                                 feature_names=feature_names,
+                                 class_names=class_names,
+                                 filled=True, rounded=True,
+                                 special_characters=True)
+      graph = graphviz.Source(dot_data)
+      graph.render(file_name, format='png', cleanup=True)
+      print(f"Decision tree for group '{group_name}' saved as '{file_name}.png")
 
     except Exception as e:
       raise Exception(f"Error plotting decision tree: {e}")
+
+"""### **Presentación de los resultados de prueba de división**
+Aquí se presenta el rendimiento del modelo (F1-score) frente a diferentes porcentajes de división del modelo. Se presentan en diagramas de cajas para poder entener donde se concentraron la mayoría de sus resultados.
+"""
+
+def plot_split_variation_results(results_ds, feature_group_name):
+    """
+      Display the results of the split sensitivity analysis.
+
+      Create a boxplot comparing the distribution of the F1-Score for each
+      percentage split tested.
+
+      Args:
+          results_df (pd.DataFrame): DataFrame with the results of the experiment.
+          feature_group_name (str): Name of the feature group for the title.
+    """
+    plt.figure(figsize=(12, 7))
+    sns.boxplot(data=results_ds, x='test_size_percent', y='f1_score', hue='test_size_percent', palette='viridis', legend=False)
+
+    plt.title(f'Distribution of F1-Score vs. Test Percentage\n(Feature Group: {feature_group_name})', fontsize=16)
+    plt.xlabel('Percentage of Data for Testing (%)', fontsize=12)
+    plt.ylabel('F1-Score', fontsize=12)
+    plt.grid(True, linestyle='--', alpha=0.6)
+    plt.show()
+
+    plt.figure(figsize=(12, 7))
+    summary_metrics = results_ds.groupby('test_size_percent')[['accuracy', 'f1_score']].mean().reset_index()
+    plt.plot(summary_metrics['test_size_percent'], summary_metrics['accuracy'], marker='o', linestyle='-', label='Accuracy Medio')
+    plt.plot(summary_metrics['test_size_percent'], summary_metrics['f1_score'], marker='x', linestyle='--', label='F1-Score Medio')
+    plt.title(f'Accuracy y F1-Score vs. Test percentage\n(Grupo de Features: {feature_group_name})', fontsize=16)
+    plt.xlabel('Percentage of data for testing (%)', fontsize=12)
+    plt.ylabel('Score', fontsize=12)
+    plt.grid(True, linestyle='--', alpha=0.6)
+    plt.legend()
+    plt.show()
+
+"""Y luego se imprimen las calificaciones tomadas por cada grupo de features."""
+
+def print_summary_report(results_ds):
+    """
+     Print a summary table of the experiment results,including F1-Score
+     and Z-Score.
+     - args:
+         results_ds (pd.DataFrame): DataFrame containing the experiment results.
+    """
+    print(" PERFORMANCE REPORT BY FEATURE GROUP")
+
+    summary_stats = results_ds.groupby('group')[['f1_score', 'recall', 'z_score','accuracy','roc_auc']].agg(['mean', 'std', 'min', 'max']).round(4)
+
+    print(summary_stats.sort_values('f1_score_mean', ascending=False))
 
 """###**Iteración de pruebas**
 
@@ -427,8 +479,8 @@ def dual_mode_evaluation(X_full, y_full, mode, num_runs_per_group, test_size):
           }
 
       print("\n Evaluation complete!")
-      results_df = pd.DataFrame(all_results)
-      return results_df, representative_models
+      results_ds = pd.DataFrame(all_results)
+      return results_ds, representative_models
 
     except Exception as e:
       raise Exception(f"Error running dual-mode evaluation: {e}")
@@ -476,25 +528,9 @@ def run_cv_comparison_experiment(X_full, y_full, n_splits=5):
     except Exception as e:
       raise Exception(f" Error running CV comparison experiment: {e}")
 
-def plot_split_variation_results(results_df, feature_group_name):
-    """
-      Display the results of the split sensitivity analysis.
-
-      Create a boxplot comparing the distribution of the F1-Score for each
-      percentage split tested.
-
-      Args:
-          results_df (pd.DataFrame): DataFrame with the results of the experiment.
-          feature_group_name (str): Name of the feature group for the title.
-    """
-    plt.figure(figsize=(12, 7))
-    sns.boxplot(data=results_df, x='test_size_percent', y='f1_score', hue='test_size_percent', palette='viridis', legend=False)
-
-    plt.title(f'Distribution of F1-Score vs. Test Percentage\n(Feature Group: {feature_group_name})', fontsize=16)
-    plt.xlabel('Percentage of Data for Testing (%)', fontsize=12)
-    plt.ylabel('F1-Score', fontsize=12)
-    plt.grid(True, linestyle='--', alpha=0.6)
-    plt.show()
+"""### **Prueba Extra: Variación de división**
+En esta prueba se analiza la sensibilidad del modelo dependiendo de los porcentajes de entrenamiento / prueba con diferentes porcentajes que se enviaran, o que tomara por defecto desde el 15% hasta el 35% para las pruebas.
+"""
 
 def analyze_variation_split(X, y,
                             split_percentages=[0.15, 0.20, 0.25, 0.30, 0.35],
@@ -521,6 +557,8 @@ def analyze_variation_split(X, y,
         for i in range(runs_per_split):
           metrics, model, cm, feature_names = run_experiment_iteration(
             X_group, y, test_size, None)
+          y_pred = model.predict(X_group)
+          metrics['z_score'] = (metrics['f1_score'] - np.mean(y_pred)) / np.std(y_pred)
           result_row = {'group': feature_group, 'run': i + 1, 'seed': None,
                         'test_size_percent': int(test_size * 100)}
           result_row.update(metrics)
@@ -530,9 +568,9 @@ def analyze_variation_split(X, y,
             print(f" Completed run {i+1}/{runs_per_split}... (F1-Score: {metrics['f1_score']:.4f})")
 
       results_ds = pd.DataFrame(all_results)
-      summary = results_ds.groupby('test_size_percent')['f1_score'].agg(['mean', 'std', 'min', 'max']).round(4)
+      summary = results_ds.groupby('test_size_percent')[['f1_score', 'accuracy', 'z_score']].agg(['mean', 'std']).round(4)
       print("\n\nSummary Results by Division Percentage:")
-      print(summary.sort_values('mean', ascending=False))
+      print(summary.sort_values(('f1_score', 'mean'), ascending=False))
       plot_split_variation_results(results_ds, feature_group)
 
   except Exception as e:
@@ -545,12 +583,13 @@ def analyze_variation_split(X, y,
 3. Evaluación de los diferentes entrenamientos con y sin semilla, para el caso de prueba se determinaron 125 por grupo de feature.
 4. Resultados con ayudas gráficas.
 5. Calificación del modelo según cross-validation.
+6. Prueba Extra.
 
 """
 
 def main():
   try:
-    X, y, ds = load_preprocess_data('/content/drive/MyDrive/Machine_learning/Dataset_linear_model/dataset_con_clase.csv')
+    X, y, ds = load_preprocess_data('/content/drive/MyDrive/dataset_con_clase.csv')
     if ds is not None:
       try:
         # Justification for non-standardization
@@ -572,30 +611,33 @@ def main():
           try:
             # Analysis of random mode
             print(" ===\n RESULTS ANALYSIS: RANDOM SPLIT MODE (ROBUSTNESS TEST)\n ===")
-            summary_random = results_random.groupby('group')['f1_score'].agg(['mean', 'std', 'min', 'max']).round(4)
-            print("\n--- Summary F1-Score Statistics (Random Mode) ---")
-            print(summary_random.sort_values('mean', ascending=False))
+            summary_random = results_random.groupby('group')[['f1_score', 'recall', 'z_score','accuracy','roc_auc']].agg(['mean', 'std', 'min', 'max']).round(4)
+            summary_random = summary_random.swaplevel(0, 1, axis=1).sort_index(axis=1)
+            print("\n--- Summary Statistics (Random Mode) ---")
+            print(summary_random.sort_values(('mean', 'f1_score'),ascending=False))
             plot_metric_distributions(results_random)
             plot_metric_progression(results_random)
 
             # Analysis of Reproducible mode
             print(" ===\n RESULTS ANALYSIS: REPRODUCIBLE SPLIT MODE (FEATURE COMPARISON)\n ===")
-            summary_reproducible = results_reproducible.groupby('group')['f1_score'].agg(['mean', 'std', 'min', 'max']).round(4)
-            print("\n--- Summary F1-Score Statistics (Reproducible Mode) ---")
-            print(summary_reproducible.sort_values('mean', ascending=False))
+            summary_reproducible = results_reproducible.groupby('group')[['f1_score', 'recall', 'z_score','accuracy', 'roc_auc']].agg(['mean', 'std', 'min', 'max']).round(4)
+            summary_reproducible = summary_reproducible.swaplevel(0, 1, axis=1).sort_index(axis=1)
+            print("\n--- Summary Statistics (Reproducible Mode) ---")
+            print(summary_reproducible.sort_values(('mean', 'f1_score'), ascending=False))
             plot_metric_distributions(results_reproducible)
             plot_metric_progression(results_reproducible)
 
-            #Complete Analysis of both models
-            print(" ===\n REPRESENTATIVE MODEL VISUALIZATIONS (from Reproducible Mode)\n ===")
-            for group_name, details in models_reproducible.items():
+            # Complete Analysis of both models
+            print(" ===\n REPRESENTATIVE MODEL VISUALIZATIONS\n ===")
+            for group_name, details in models_random.items():
               print(f"\n--- Model for Group: '{group_name}' ---")
               plot_confusion_matrix_heatmap(
                   details['cm'],
                   title=f"Confusion Matrix (Representative Run - {group_name})")
               plot_decision_tree_structure(
                   details['model'],
-                  feature_names=details['feature_names'])
+                  feature_names=details['feature_names'],
+                  group_name=group_name)
 
             # --- Cross-Validation Results ---
             print(" ===\nCROSS-VALIDATION RESULTS (STABILITY TEST)\n ===")
