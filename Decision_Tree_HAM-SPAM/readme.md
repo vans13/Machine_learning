@@ -2,9 +2,39 @@
 
 Este proyecto presenta la aplicación del algoritmo de árboles de decisión para la clasificación de correos SPAM, con el objetivo de identificar y analizar las características o features más influyentes que permiten su identificación. Se normalizó el conjunto de datos con ayuda del z-score, y finalmente se evaluó con las métricas de F1 Score, Accuracy Score y matrices de confusión. Los Árboles de Decisión son algoritmos de machine learning que funcionan como un diagrama de flujo jerárquico para tomar decisiones de clasificación.
 
-## Características Principales del Proyecto  
+## Características Principales del Proyecto
 
-El algoritmo construye un árbol donde cada nodo interno representa una pregunta sobre una característica o feature del correo. Cada rama representa una respuesta posible (true/false), y cada hoja contiene la clasificación final (spam o ham).
+### Árboles de Decisión
+Un árbol de decisión es un algoritmo de aprendizaje supervisado no paramétrico, que se utiliza tanto para tareas de clasificación como de regresión. Tiene una estructura jerárquica de árbol, que consta de un nodo raíz, ramas, nodos internos y nodos hoja.  
+
+<img width="1024" height="576" alt="image" src="https://github.com/user-attachments/assets/f0d4067d-634f-4297-9f47-119bfb800f4d" />
+
+El aprendizaje de árboles de decisión emplea una estrategia de divide y vencerás realizando una búsqueda codiciosa para identificar los puntos de división óptimos dentro de un árbol. Este proceso de división se repite de forma descendente y recursiva hasta que todos o la mayoría de los registros se hayan clasificado con etiquetas de clase específicas.
+
+El sobreajuste en árboles de decisión está relacionado con su tamaño y estructura. Los árboles simples pueden lograr fácilmente nodos finales con datos de una única clase, es decir, completamente puros. No obstante, cuando el árbol se vuelve más complejo y profundo, resulta progresivamente más complicado preservar esa homogeneidad, lo que provoca que cada rama terminal contenga muy pocas observaciones. Esta dispersión excesiva de los datos, conocida como fragmentación, frecuentemente desencadena problemas de sobreajuste en el modelo.
+
+Entiéndase que la homogeneidad hace referencia a la pureza de la clase, es decir, un nodo es completamente homogéneo o puro cuando todas las observaciones que contiene pertenecen a la misma clase. 
+
+### Uso del algoritmo de Árbol de Decisión para la clasificación de correo SPAM/HAM
+
+El algoritmo construye un árbol donde cada nodo interno representa una pregunta sobre una característica o feature del correo. Cada rama representa una respuesta posible (true/false), y cada hoja contiene la clasificación final (spam o ham). Para la selección del mejor atributo en cada nodo, el árbol de decisión tiene dos métodos usados como criterios de división: entropía (ganancia de información) y la impureza de Gini. 
+
+Para este caso de clasificación, el algoritmo usado de `DecisionTreeClassifier` de la librería de `scikit-learn` usa la impureza de Gini por defecto como criterio de división. Esta impureza representa la medición del grado de heterogeneidad de las clases en un nodo de un árbol de decisión. Su definición precisa se basa en la probabilidad de clasificación incorrecta: es la probabilidad de que un elemento seleccionado al azar del nodo sea clasificado incorrectamente si se le asignara una etiqueta de clase de forma aleatoria, siguiendo la distribución de etiquetas en ese mismo nodo.
+
+
+#### Impureza de Gini
+
+La fórmula para calcular la Impureza de Gini es:
+
+$$Gini = 1 - \sum_{i=1}^{c} (p_i)^2$$
+
+#### Donde:
+
+- **c**: Es el número total de clases o categorías (que en este caso serían 2 clases `SPAM` y `HAM`
+- **p<sub>i</sub>**: Es la probabilidad de que un elemento seleccionado al azar pertenezca a la clase *i*.
+
+
+Un conjunto de datos se considera puro si todas sus muestras pertenecen a una sola clase (máxima concentración de una etiqueta). Por el contrario, un conjunto de datos es impuro si las etiquetas de clase están mezcladas o distribuidas uniformemente entre las muestras (mínima concentración). Entre más pequeña es esta impureza de Gini, se dividirá mejor las características de los datos en cagtegorías distintas. 
 
 ### Proceso de Construcción
 
@@ -27,13 +57,13 @@ El algoritmo evalúa todas las características disponibles, para el dataset se 
 - Uso de acortadores de URL `uso_acortadores`
 
 #### División óptima
-Utiliza métricas como la ganancia de información o el índice de Gini para determinar qué característica divide mejor los datos en cada nodo  
+El algoritmo de árboles de decisión utiliza métricas como la ganancia de información o el índice de Gini para determinar qué característica divide mejor los datos en cada nodo.
 
 #### Recursividad
-Repite el proceso en cada subconjunto hasta alcanzar un criterio de parada (pureza de clase, profundidad máxima, número mínimo de muestras)
+Además, este algoritmo repite el proceso en cada subconjunto hasta alcanzar un criterio de parada (pureza de clase, profundidad máxima, número mínimo de muestras)
 
 #### Clasificación de Nuevos Correos
-Para clasificar un nuevo correo, el algoritmo sigue el camino desde la raíz hasta una hoja, respondiendo las preguntas en cada nodo según las características del mensaje. La hoja final determina si es spam o ham.
+Para clasificar un nuevo correo, el algoritmo sigue el camino desde la raíz hasta una hoja, respondiendo las preguntas en cada nodo según las características del mensaje. La hoja final determina si es spam o ham. 
 
 
 ## Librerías Utilizadas
