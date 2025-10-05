@@ -54,7 +54,7 @@ Un conjunto de datos se considera puro si todas sus muestras pertenecen a una so
 ## Proceso de Construcción
 
 ### Selección de características 
-El algoritmo evalúa todas las características disponibles, para el dataset se escogieron las relacionadas a continuación.
+El algoritmo opera sobre un conjunto de características diseñadas para capturar patrones comunes en correos maliciosos o SPAM. Estas variabeles predicatoras son las siguientes:
 
 - Cantidad de signos de exclamación `(cantidad_exclamaciones)`	
 - Cantidad de signos de exclamación `cantidad_interrogaciones`
@@ -71,14 +71,20 @@ El algoritmo evalúa todas las características disponibles, para el dataset se 
 - Uso de lenguaje imperativo `lenguaje_imperativo`
 - Uso de acortadores de URL `uso_acortadores`
 
-#### División óptima
-El algoritmo de árboles de decisión utiliza métricas como la ganancia de información o el índice de Gini para determinar qué característica divide mejor los datos en cada nodo.
+### Construcción del Árbol
 
-#### Recursividad
-Además, este algoritmo repite el proceso en cada subconjunto hasta alcanzar un criterio de parada (pureza de clase, profundidad máxima, número mínimo de muestras)
+#### Nodo Raíz
+El proceso comienza con el conjunto de datos completo en el nodo inicial o raíz.
+
+#### Selección de la División óptima
+En cada nodo, el algoritmo evalúa todas las características para encontrar la condición o regla que divida los datos en dos subconjuntos de la manera más pura posible. Para una característica numérica como cantidad_exclamaciones, buscará un umbral (por ejemplos cantidad_exclamaciones > 5); para una booleana como adjuntos_ejecutables, la división es naturalmente True o False. La "mejor" división se determina maximizando una métrica de pureza como la Ganancia de Información o el Índice de Gini.
+
+#### Recursividad y criterio de detención
+Este proceso de división se repite en cada nuevo subconjunto (creando ramas y nodos), hasta que se cumple un criterio de detención ya definido. Este criterio evita que el árbol crezca indefinidamente y se sobreajuste a los datos. Para este caso se estableció un criterio de máxima profundidad de 12. 
 
 #### Clasificación de Nuevos Correos
-Para clasificar un nuevo correo, el algoritmo sigue el camino desde la raíz hasta una hoja, respondiendo las preguntas en cada nodo según las características del mensaje. La hoja final determina si es spam o ham. 
+Una vez que el árbol ha sido construido, clasificar un nuevo correo electrónico es un proceso en el cual el correo recorre el árbol desde la raíz hacia abajo. En cada nodo, se evalúa la condición correspondiente con base en las características del correo. Dependiendo del resultado (verdadero o falso), se sigue la rama izquierda o derecha hasta llegar a un nodo hoja. La etiqueta de clase de esa hoja ('spam' o 'ham') es la predicción final que se asigna al correo.
+
 
 [Subir](#aplicación-del-algoritmo-de-árboles-de-decisión-para-la-clasificación-de-correo-spam) 
 
