@@ -1,8 +1,20 @@
+<a ide="top"></a>
 # Aplicación del Algoritmo de Árboles de Decisión para la Clasificación de Correo SPAM
 
 Este proyecto presenta la aplicación del algoritmo de árboles de decisión para la clasificación de correos SPAM, con el objetivo de identificar y analizar las características o features más influyentes que permiten su identificación. Se normalizó el conjunto de datos con ayuda del z-score, y finalmente se evaluó con las métricas de F1 Score, Accuracy Score y matrices de confusión. Los Árboles de Decisión son algoritmos de machine learning que funcionan como un diagrama de flujo jerárquico para tomar decisiones de clasificación.
 
-## Características Principales del Proyecto
+## Índice de Contenidos
+* [Características del Proyecto](#características-del-proyecto)
+* [Proceso de Construcción](#proceso-de-construcción)
+* [Librerías Utilizadas](#librerías-utilizadas)
+* [Flujo de Trabajo](#flujo-de-trabajo)
+* [Estructura del Proyecto](#estructura-del-proyecto)
+* [Instalación y uso](#instalación-y-uso)
+* [Análisis de Resultados](#análisis-de-resultados)
+* [Conclusiones](#conclusiones)
+
+<a name="Características del Proyecto"></a>
+## Características del Proyecto
 
 ### Árboles de Decisión
 Un árbol de decisión es un algoritmo de aprendizaje supervisado no paramétrico, que se utiliza tanto para tareas de clasificación como de regresión. Tiene una estructura jerárquica de árbol, que consta de un nodo raíz, ramas, nodos internos y nodos hoja.  
@@ -34,11 +46,14 @@ $$Gini = 1 - \sum_{i=1}^{c} (p_i)^2$$
 - **p<sub>i</sub>**: Es la probabilidad de que un elemento seleccionado al azar pertenezca a la clase *i*.
 
 
-Un conjunto de datos se considera puro si todas sus muestras pertenecen a una sola clase (máxima concentración de una etiqueta). Por el contrario, un conjunto de datos es impuro si las etiquetas de clase están mezcladas o distribuidas uniformemente entre las muestras (mínima concentración). Entre más pequeña es esta impureza de Gini, se dividirá mejor las características de los datos en cagtegorías distintas. 
+Un conjunto de datos se considera puro si todas sus muestras pertenecen a una sola clase (máxima concentración de una etiqueta). Por el contrario, un conjunto de datos es impuro si las etiquetas de clase están mezcladas o distribuidas uniformemente entre las muestras (mínima concentración). Entre más pequeña es esta impureza de Gini, se dividirá mejor las características de los datos en cagtegorías distintas.  
 
-### Proceso de Construcción
+[Subir](#aplicación-del-algoritmo-de-árboles-de-decisión-para-la-clasificación-de-correo-spam)
 
-#### Selección de características 
+<a name="Proceso de Construcción"></a>
+## Proceso de Construcción
+
+### Selección de características 
 El algoritmo evalúa todas las características disponibles, para el dataset se escogieron las relacionadas a continuación.
 
 - Cantidad de signos de exclamación `(cantidad_exclamaciones)`	
@@ -65,7 +80,9 @@ Además, este algoritmo repite el proceso en cada subconjunto hasta alcanzar un 
 #### Clasificación de Nuevos Correos
 Para clasificar un nuevo correo, el algoritmo sigue el camino desde la raíz hasta una hoja, respondiendo las preguntas en cada nodo según las características del mensaje. La hoja final determina si es spam o ham. 
 
+[Subir](#aplicación-del-algoritmo-de-árboles-de-decisión-para-la-clasificación-de-correo-spam) 
 
+<a name="Librerías Utilizadas"></a>
 ## Librerías Utilizadas
 
 | Categoría | Librería / Módulo | Descripción | Uso en el código |
@@ -88,17 +105,21 @@ Para clasificar un nuevo correo, el algoritmo sigue el camino desde la raíz has
 | | **sklearn.metrics.roc_auc_score** | Métrica basada en el área bajo la curva ROC. | Evaluación del rendimiento del modelo en clasificación binaria. |
 | **Preprocesamiento** | **sklearn.preprocessing.StandardScaler** | Escalador para normalizar características con media 0 y varianza 1. | Normalización de datos antes de entrenar modelos. |
 | | **sklearn.pipeline.make_pipeline** | Función para encadenar pasos de preprocesamiento y modelado. | Creación de pipelines con escalado y modelo de clasificación. |
-| **Aleatoriedad y Simulación** | **random** | Módulo estándar de Python para generar números pseudoaleatorios. | Selección aleatoria, generación de números aleatorios y control de experimentos reproducibles. |
+| **Aleatoriedad y Simulación** | **random** | Módulo estándar de Python para generar números pseudoaleatorios. | Selección aleatoria, generación de números aleatorios y control de experimentos reproducibles. |  
 
+[Subir](#aplicación-del-algoritmo-de-árboles-de-decisión-para-la-clasificación-de-correo-spam)  
 
+<a name="item4"></a>
 ## Estructura del Proyecto
 * **`data/`**: Carpeta que contiene el conjunto de datos (`.csv`) utilizado.
 * **`Arbol_Decision_SPAM-HAM.ipynb`**: Notebook de Google Colab con todo el código fuente, desde la carga de datos hasta la evaluación final.
 * **`requirements.txt`**: Archivo que lista todas las dependencias de Python para una fácil instalación del entorno.
 * **`README.md`**: Documentación del proyecto.
 
----
+---  
+[Subir](#aplicación-del-algoritmo-de-árboles-de-decisión-para-la-clasificación-de-correo-spam) 
 
+<a name="Instalación y uso"></a>
 ## Instalación y uso
 
 Para replicar este proyecto en su entorno local, siga estos pasos:  
@@ -123,8 +144,8 @@ Para replicar este proyecto en su entorno local, siga estos pasos:
 4.  **O ejecute el Notebook:**
     Abre el archivo `Arbol_Decision_SPAM-HAM.ipynb` en Jupyter Notebook, JupyterLab o Google Colab para ver y ejecutar el análisis.
 
----
-
+[Subir](#aplicación-del-algoritmo-de-árboles-de-decisión-para-la-clasificación-de-correo-spam)   
+<a name="Flujo de Trabajo"></a>
 ## Flujo de Trabajo 
 
 La aplicación del modelo de  árbol de decisión en este caso se realizó con el siguiente flujo de trabajo, con el objetivo de realizar un análisis profundo de su implementación, la selección de las características y la evaluación de la estabilidad del modelo con una división de datos aleatoria. 
@@ -181,9 +202,11 @@ Además, sirve como un punto de referencia sólido. Si el F1-Score promedio del 
 
 Para cada grupo de características y cada modo, se calcularon estadísticas (media, desviación estándar, mínimo, máximo) para las métricas clave (F1-Score, Accuracy, etc.). Posterior a esto, se generaron diagramas de caja (boxplot) para comparar la distribución del rendimiento entre los grupos y gráficos de líneas (lineplot) para observar la progresión del rendimiento a lo largo de las 125 ejecuciones.
 
-Por último se utilizó la matriz de confusión para evaluar el  rendimiento en predicciones específicas y la estructura del árbol de decisión (limitada a 5 niveles de profundidad) para interpretar su lógica interna.
+Por último se utilizó la matriz de confusión para evaluar el  rendimiento en predicciones específicas y la estructura del árbol de decisión (limitada a 5 niveles de profundidad) para interpretar su lógica interna.  
 
+[Subir](#aplicación-del-algoritmo-de-árboles-de-decisión-para-la-clasificación-de-correo-spam)
 
+<a name="Análisis de Resultados"></a>
 ## Análisis de Resultados
 
 Ahora bien, después de ejecutado el script con las pruebas, se presenta el análisis que ofrece una evaluación del rendimiento del clasificador de Árbol de Decisión. La evaluación se fundamenta en los resultados obtenidos de los 1000 entrenamientos experimentales de entrenamiento basado en semilla y sin ella; además del entrenamiento por diferentes porcentajes de división del dataset. Este procedimiento permite explicar la factibilidad del modelo en cuanto a las modificaciones de su dataset y de su comportamiento en control base y sin este. A su vez, permite comprender el funcionamiento del modelo y el comportamiento de los Árboles de decisión en cuanto a su profundidad, reglas de decisión y complejidad cuando no se limita su aprendizaje.
@@ -339,8 +362,9 @@ Grupo de features sin ruido
 <img width="1023" height="653" alt="image" src="https://github.com/user-attachments/assets/943a353a-e310-49bb-8269-4ce8aa725517" />  
 
 Por otro lado, en el grupo de características sin ruido, demostró un rendimiento significativamente alto, manteniéndose por encima de 0.97. A medida que se aumenta o disminuye el porcentaje del tamaño del conjunto de entrenamiento y test, su variación es ligera, lo que se esperaría al ajustar el tamaño del conjunto de datos en un entrenamiento normal. Este comportamiento demuestra que el modelo es robusto, si bien depende de los datos, no depende de forma crítica de ellos, llegando a generalizar incluso con un 65% de datos de entrenamiento, aprovechando sustancialmente la información de los datos. Una vez más, se confirma que la mejor elección para el modelo fue la selección del grupo de características sin ruido.  
+[Subir](#aplicación-del-algoritmo-de-árboles-de-decisión-para-la-clasificación-de-correo-spam)
 
-
+<a name="Conclusiones"></a>
 ## Conclusiones
 
 Para la aplicación de este modelo de árboles de decisión, la estandarización de datos puede omitirse debido a una razón en específico: los árboles de decisión funcionan a partir de la creación de reglas basadas en umbrales, más no en la magnitud o distancia entre los puntos de datos. Para un modelo de árbol de decisión, el algoritmo examina cada una de las características predictoras disponibles y, para cada una, evalúa todos los posibles puntos de corte o umbrales que podrían usarse para dividir los datos, de esta forma con estandarización o sin estandarización el algoritmo establecerá los mismo umbrales sin afectar de forma significativa el resultado. 
@@ -356,6 +380,8 @@ El poder predictivo de un árbol de decisión se basa en su capacidad para const
 En cuanto la validación cruzada (cross-validation), demuestra que el modelo con mayor rendimiento fue el que se trabajó bajo el grupo de características sin ruido, confirmando lo demostrado en las gráficas de las métricas evaluadas. Con un promedio del rendimiento, el grupo sin ruido se posiciona con un alto  f1-score (0.975) y un alto accuracy (0.969), demostrando que la exclusión de características con ruido fue la estrategia más efectiva para el entrenamiento del modelo. Por otro lado los grupos con todas las features y el grupo balanceado si bien son cercanos en cuanto al promedio, su desviación estándar es significativamente alta sugiriendo que el modelo es ligeramente menos fiable. 
 
 Para la división de datos en el conjunto de entrenamiento y test, se segmentan en diferentes porcentajes con el fin de validar el comportamiento del modelo (15%, 20%, 25%, 30% y 35% para el test size). A partir de estos porcentajes se evidenció una relación directa con las métricas de evaluación, a medida que se disminuye el tamaño del conjunto de entrenamiento, las métricas de rendimiento disminuyeron ligeramente. Sin embargo, para el modelo con el grupo sin ruido se pasó de un F1-Score de 0.9775 con un 85% de datos de entrenamiento a un F1-score de 0.9713 con un 65%, indicando una caída mínima demostrando que la división del conjunto de datos con esos porcentajes fueron adecuados y óptimos, lo cual garantiza una rica presentación de datos para el aprendizaje del modelo y su validación. 
+
+[Subir](#aplicación-del-algoritmo-de-árboles-de-decisión-para-la-clasificación-de-correo-spam)
 
 
 
