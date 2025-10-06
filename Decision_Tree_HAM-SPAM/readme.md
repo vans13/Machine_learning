@@ -11,6 +11,7 @@ Este proyecto presenta la aplicación del algoritmo de árboles de decisión par
 * [Estructura del Proyecto](#estructura-del-proyecto)
 * [Instalación y uso](#instalación-y-uso)
 * [Análisis de Resultados](#análisis-de-resultados)
+* [Técnica de Poda para el Árbol de Decisión](#técnica-de-poda-para-el-árbol-de-decisión)
 * [Conclusiones](#conclusiones)
 
 <a name="Características del Proyecto"></a>
@@ -369,6 +370,102 @@ Grupo de features sin ruido
 
 Por otro lado, en el grupo de características sin ruido, demostró un rendimiento significativamente alto, manteniéndose por encima de 0.97. A medida que se aumenta o disminuye el porcentaje del tamaño del conjunto de entrenamiento y test, su variación es ligera, lo que se esperaría al ajustar el tamaño del conjunto de datos en un entrenamiento normal. Este comportamiento demuestra que el modelo es robusto, si bien depende de los datos, no depende de forma crítica de ellos, llegando a generalizar incluso con un 65% de datos de entrenamiento, aprovechando sustancialmente la información de los datos. Una vez más, se confirma que la mejor elección para el modelo fue la selección del grupo de características sin ruido.  
 [Subir](#aplicación-del-algoritmo-de-árboles-de-decisión-para-la-clasificación-de-correo-spam)
+
+<a name="Técnica de Poda para el Árbol de Decisión"></a>
+## Técnica de Poda para el Árbol de Decisión
+
+### Criterio para aplicar la técnica de poda
+
+Esta técnica denominada poda de árboles, fue diseñada para reducir la complejidad del modelo y con ello evitar el sobreajuste del mismo. Un modelo excesivamente profundo puede memorizar el ruido de los datos de entrenamiento en lugar de capturar las tendencias subyacentes, lo que perjudica su capacidad para generalizar nuevos datos. 
+
+Como se mencionó anteriormente en los análisis de resultados, el árbol que se desarrolló inicialmente tuvo una profundidad de 14, pero se planteó que un modelo con profundidad inferior podría ofrecer un rendimiento similar o superior. Para validar esto, se realizó un análisis comparativo en diferentes escenarios (profundidad 5, 7, 10 y 12)  usando diversos grupos de características para observar el comportamiento del modelo. 
+Inicialmente, se entrenó un modelo con una profundidad de 14, el cual presentaba un alto riesgo de sobreajuste. Al podar el árbol a profundidades de 10 y 7, se observó que el rendimiento se mantenía estable, demostrando que la complejidad adicional de los modelos más profundos era innecesaria y no aportaba poder predictivo.
+
+Resultados de Validación Cruzada para el modelo de Árbol de acuerdo a la profundidad
+
+max_depth=5
+
+| group             | f1_mean  | f1_std  | accuracy_mean | accuracy_std |
+|-------------------|----------|---------|----------------|---------------|
+| without_noise     | 0.975517 | 0.006584 | 0.9698         | 0.005636      |
+| all               | 0.964871 | 0.006961 | 0.9546         | 0.009972      |
+| balanced          | 0.961052 | 0.004637 | 0.9512         | 0.005192      |
+| high_correlation  | 0.892323 | 0.003912 | 0.8678         | 0.004665      |
+
+
+
+max_depth=7
+
+| group             | f1_mean  | f1_std  | accuracy_mean | accuracy_std |
+|-------------------|----------|---------|----------------|---------------|
+| without_noise     | 0.974986 | 0.006110 | 0.9692         | 0.007026      |
+| balanced          | 0.961702 | 0.003629 | 0.9520         | 0.005692      |
+| all               | 0.959715 | 0.007384 | 0.9538         | 0.007985      |
+| high_correlation  | 0.891596 | 0.003337 | 0.8678         | 0.004665      |
+
+
+
+max_depth=10
+
+| group             | f1_mean  | f1_std  | accuracy_mean | accuracy_std |
+|-------------------|----------|---------|----------------|---------------|
+| without_noise     | 0.974050 | 0.005725 | 0.9688         | 0.007652      |
+| all               | 0.962073 | 0.007305 | 0.9522         | 0.009745      |
+| balanced          | 0.959918 | 0.004999 | 0.9506         | 0.005535      |
+| high_correlation  | 0.891775 | 0.003287 | 0.8684         | 0.005426      |
+
+
+max_depth=12
+| group             | f1_mean  | f1_std  | accuracy_mean | accuracy_std |
+|-------------------|----------|---------|----------------|---------------|
+| without_noise     | 0.975789 | 0.004595 | 0.9712         | 0.005845      |
+| all               | 0.961569 | 0.006745 | 0.9538         | 0.007756      |
+| balanced          | 0.960410 | 0.005578 | 0.9514         | 0.006053      |
+| high_correlation  | 0.891775 | 0.003287 | 0.8684         | 0.005426      |
+
+Al evaluar el árbol con profundidad 5, el modelo no solo mantuvo su robustez, sino que mostró una mejora en métricas clave, como el F1-score promedio en el grupo que contenía todas las características (all). Este fue el punto donde la reducción de la complejidad eliminó el ruido de manera  efectiva ya que la predicción del modelo fue aceptable. Por lo tanto, se concluye que max_depth = 5 es la configuración óptima, ya que representa el modelo más simple que, al mismo tiempo, alcanza el rendimiento máximo entre todas las configuraciones probadas, garantizando eficiencia, mejor interpretabilidad y mayor probabilidad de generalización. 
+
+<img width="921" height="663" alt="image" src="https://github.com/user-attachments/assets/fc9e7972-1f65-4caa-9a37-6f20073c3ae2" />  
+
+Como se puede observar en esta gráfica donde se comparan las métricas por cada uno de los grupos, se revela que las medianas de las métricas clave, como el F1-Score y el accuracy, se sitúan consistentemente en rangos altos para todos los grupos de características evaluados. Aún más importante, la compacta altura de las cajas indica una baja varianza entre las 125 ejecuciones, confirmando que el rendimiento del modelo es robusto y fiable En conjunto, estos diagramas ofrecen una fuerte evidencia visual de un modelo bien calibrado, donde los grupos balanceado y sin ruido muestran una ligera pero consistente ventaja en el rendimiento general.
+
+<img width="921" height="466" alt="image" src="https://github.com/user-attachments/assets/73765ad9-a90e-446c-955f-ec65fd990cec" />
+
+<img width="921" height="466" alt="image" src="https://github.com/user-attachments/assets/69ce6247-8739-44e4-87c9-872919b2747b" />
+
+Las gráficas de progresión del F1-Score y accuracy demuestran la alta estabilidad del modelo con una profundidad de 5. El comportamiento fluctuante de las líneas es normal y muestra que, a lo largo de 125 ejecuciones distintas, todos los grupos de características rinden de manera consistente dentro de un rango de alto rendimiento, sin que ninguno domine sobre los otros. Esto confirma que el modelo es robusto y su clasificación no depende de una partición de datos, sino de un aprendizaje generalizable y fiable.  
+
+
+<img width="921" height="593" alt="image" src="https://github.com/user-attachments/assets/a09f1d38-62f7-4a91-a932-66a1ffcf8644" />
+
+<img width="921" height="588" alt="image" src="https://github.com/user-attachments/assets/6856e503-4126-469b-8b54-22367056fedd" />
+
+Estos gráficos demuestran que, si bien el modelo es robusto con el grupo de características sin ruido en todas las proporciones de testeo, su rendimiento es óptimo cuando se utiliza un 15% de los datos para la prueba (y 85% para el entrenamiento). En este punto, no solo se alcanza una de las medianas de F1-Score más altas (aproximadamente 0.87), sino que, de manera crucial, presenta la menor varianza, como lo indica la caja notablemente más compacta. Esto sugiere que el modelo se beneficia significativamente de tener más datos para entrenar, lo que resulta en un rendimiento no solo alto, sino también mucho más estable y predecible.
+
+<img width="921" height="593" alt="image" src="https://github.com/user-attachments/assets/6a43896d-6585-432f-a00c-9111432a19d0" />
+
+<img width="921" height="593" alt="image" src="https://github.com/user-attachments/assets/dd226965-d94b-460b-a976-9252f5f89e66" />
+
+Para el grupo de características de alta correlación, la gráficas muestran que el modelo mantiene un F1-Score alto en las diferentes proporciones de testeo, pero su comportamiento es considerablemente más inestable que con el grupo de características sin ruido. No hay un porcentaje de prueba que sea claramente superior; por ejemplo, mientras que el 20% alcanza una mediana alta, también tienen una mayor varianza, indicando resultados inconsistentes. Este comportamiento sugiere que este conjunto de características, aunque efectivo, hace que el modelo sea más sensible a los datos específicos con los que se entrena, resultando en un rendimiento menos fiable en comparación.
+
+<img width="921" height="755" alt="image" src="https://github.com/user-attachments/assets/60c8c990-61bb-40bc-9ab7-a188ffed0541" />
+
+Para esta matriz del grupo de alta correlación se describe un modelo más conservador y preciso en el manejo del correo legítimo. Logra reducir significativamente los Falsos Positivos a sólo 65, lo que minimiza el riesgo de que un correo importante sea enviado a la carpeta de spam. Este beneficio, sin embargo, se obtiene a costa de un mayor número de Falsos Negativos (117), lo que significa que es más permisivo y deja pasar una mayor cantidad de SPAM a la bandeja de entrada. Este perfil es preferible en situaciones donde la prioridad es no perder nunca un correo legítimo.
+
+<img width="921" height="770" alt="image" src="https://github.com/user-attachments/assets/3559c760-197a-48cc-a0d8-aafb307e074c" />
+
+Para esta matriz de confusión para el grupo sin ruido, se revela un clasificador potente en la detección de correo no deseado, identificando correctamente 547 SPAM frente a 86 que no logra detectar. Sin embargo, su perfil de error muestra una tendencia a ser ligeramente sesgado, ya que comete 95 errores de Falso Positivo (etiquetar un correo legítimo como SPAM). Este comportamiento lo hace ideal para escenarios donde la prioridad máxima es bloquear la mayor cantidad de spam posible, incluso si implica revisar ocasionalmente la carpeta de correo no deseado en busca de falsas alarmas.
+
+<img width="921" height="257" alt="image" src="https://github.com/user-attachments/assets/64c491ec-7645-4520-a26d-dc5c632f62c0" />
+
+
+<img width="921" height="221" alt="image" src="https://github.com/user-attachments/assets/22bb9037-75d6-44fe-9554-252d36552ac1" />
+
+Para los árboles generados con profundidad 5, la primera pregunta con la que parte es la cantidad de urls, evidenciando que esta pregunta es un factor decisivo para determinar si es SPAM o HAM.  A partir de ahí, el árbol se ramifica para refinar su decisión. Por ejemplo, una ruta típica que conduce a una clasificación de SPAM con alta confianza es si un correo tiene más de una URL y además utiliza lenguaje imperativo.
+
+Sumado a esto, una ruta común hacia una clasificación de HAM se da cuando un correo tiene cero URLs, no contiene adjuntos ejecutables y su lenguaje no es imperativo. Cada camino desde la raíz hasta una hoja del árbol representa una regla de clasificación específica aprendida a partir de los datos.
+[Subir](#aplicación-del-algoritmo-de-árboles-de-decisión-para-la-clasificación-de-correo-spam)
+
 
 <a name="Conclusiones"></a>
 ## Conclusiones
