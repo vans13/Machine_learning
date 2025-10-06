@@ -402,7 +402,7 @@ def run_experiment_iteration(X, y, test_size, seed):
         X, y, test_size=test_size, random_state=seed, stratify=y)
 
     model = DecisionTreeClassifier(
-        random_state=seed)
+        random_state=seed, max_depth=12)
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
     y_pred_proba = model.predict_proba(X_test)[:, 1]
